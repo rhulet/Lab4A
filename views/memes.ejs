@@ -1,0 +1,122 @@
+<%/****************************************************************************************
+ This comment is inside EJS comment marks, so it will not render in HTML.
+ This page contains the HTML for the /memes path. This page is populated with images from
+ the database. The extension EJS stands for Embedded JavaScript and is HTML built using
+ server-side JavaScript (similar to when we used PHP combined with HTML).
+
+ The controller for this page is found in the memes.js page. The getMemeData function is
+ called from the server.js page when this page is rendered. So the variables generated
+ by the getMemeData function (imageList and user) are visible to EJS within this page.
+
+ EJS tips:
+ If you just want to reference a single variable you can use the EJS breakout: < % = and
+ close with % > (without the spaces), for functions or other non-variables don't use the
+ '=', only < % and close with % > (without the spaces). Again, this is similar to breaking
+ out of html with <?php CODE ?>, but using < % CODE % > or, for printing out a single
+ value, < %= VARIABLE % >.
+***************************************************************************************/%>
+
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset='utf-8'>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<script type='text/javascript' src="http://code.jquery.com/jquery-latest.min.js"></script>
+	<script type='text/javascript' src='/js/bootstrap.min.js'></script>
+	<script type='text/javascript' src="/socket.io/socket.io.js"></script>
+
+	<link rel='stylesheet' type='text/css' href='/css/bootstrap.min.css'>
+	<link rel='stylesheet' type='text/css' href='/css/bootstrap-responsive.min.css'>
+	<link rel='stylesheet' type='text/css' href='/css/style.css'>
+
+	<title>MEMES!</title>
+</head>
+<body class="bd">
+	<div class='navbar navbar-inverse'>
+		<div class='navbar-inner'>
+			<div class='container'>
+				<button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+				</button>
+				<div class='nav-collapse collapse'>
+					<ul class='nav'>
+						<li id='home-nav-item'><a href='/memes'>Memes</a></li>
+						<li id='home-nav-item'><a href='/login'>Login</a></li>
+					</ul>
+					<ul class='nav pull-right'>
+						<li><a href='#'>Welcome
+							 <!--
+								You will want to add code here (PART 2) to allow you to display a custom message if a user is
+								logged in (Welcome Bob!) or a generic message if no one is logged into the site (Welcome Guest User).
+								Similarly, if a user is not logged in you want a login button to display and no logout button,
+								but if a user is logged in then you want to display a logout button. You may need to break in
+								and out of Node JS several times using "< % % >" and "< %= % >"
+							 -->
+						</a></li>
+					</ul>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="row-fluid">
+		<time></time>
+		<div id="wrapper">
+			<div id="columns">
+				<!--
+				 The following lines break out of html into ejs to process data passed to the view
+				 from the controller. The "<% %>" indicates that you are breaking out of and then back into html.
+				 Notice that the open bracket for the for loop starts here, but ends after the html, meaning that
+				 the html between will be printed each time through the loop
+				-->
+				<% for(var i = 0, len = imageList.length; i < len; i++){
+					var current_image = imageList[i];%>
+					<!-- Here are examples of printing out a variable's value with "< %= % >" -->
+					<div class="pin back-image" id="block<%=current_image.imageId%>">
+						<img src="<%=current_image.imagePath%>"   alt="<%=current_image.altText%>">
+
+						<!-- this button is for "liking" the image. On click it passes the image id and the button's id to the updateLikeCount function -->
+						<button class="btn btn-primary btn-mini float-left" id="like<%=current_image.imageId %>" type="button" onClick="updateLikeCount(<%=current_image.imageId%>, this.id);">Likes: <%=current_image.numLikes%></button><br>
+
+						<!-- this button is a link to a user specific page -->
+						<a class="btn btn-info btn-mini" style="margin-top:5px;" href="/memes/<%=current_image.userId%>/view">More by <%=current_image.userName%></a>
+					</div>
+				<% } %>
+			</div>
+		</div>
+	</div>
+
+	<script>
+		//connect to the websocket server
+		var socket = io.connect('http://1.1.1.1:1337'); //change this IP address your server
+
+		//on the notification event add the new meme(s) to the '#columns' div
+		//this notification is coming from the server.js meme-hook function
+		socket.on('notification', function (data){
+			var images = data.images;
+
+			/* DO WORK HERE IN PART 2!
+			This function receives all of the meme information sent from the web socket.
+			Figure out how to use that data to update the page when a new meme is added.
+			We recommend using the jQuery ".append()" function
+			*/
+
+			//if you want the '<time></time>' div to update with a time stamp, uncomment the following line
+			//$('time').html('Last Update:' + data.time);
+		})
+
+		//called when the like button is clicked
+		function updateLikeCount (imageId, buttonId){
+			//You will need to use socket.emit to send information to the server (server.js). Use the event name 'button_click'
+
+		}
+
+		//called on return of updateLikeCount (above) after it runs on the server file
+		socket.on('return_click', function (newImage, buttonId){
+			//You will need to add functionality here to update the text for the button containing the like count
+
+		})
+	</script>
+</body>
+</html>
