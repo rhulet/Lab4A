@@ -12,6 +12,7 @@ CREATE TABLE `users` (
   `email` varchar(255) DEFAULT NULL,
   `password` varchar(255) DEFAULT NULL,
   `loggedIn` int(11) DEFAULT NULL,
+  `isAdmin` BOOLEAN DEFAULT FALSE,
   `createdAt` datetime NOT NULL,
   `updatedAt` datetime NOT NULL,
   PRIMARY KEY (`userId`)
@@ -21,7 +22,7 @@ CREATE TABLE `users` (
 -- Dumping data for table `users`
 --
 LOCK TABLES `users` WRITE;
-INSERT INTO `users` VALUES (1,'user','user@user.com','12dea96fec20593566ab75692c9949596833adc9',0,'2013-08-21 10:22:16','2013-08-21 10:22:16'),(2,'admin','admin@admin.com','d033e22ae348aeb5660fc2140aec35850c4da997',0,'2013-08-21 10:22:16','2013-08-21 10:22:16'),(3,'jed','test@gmail.com','123456789',1,'2013-08-21 10:22:16','2013-08-21 10:22:16'),(4,'tester','tester@test.com','0987654321',0,'2013-08-21 10:22:16','2013-08-21 10:22:16');
+INSERT INTO `users` VALUES (1,'user','user@user.com','12dea96fec20593566ab75692c9949596833adc9',0,0,'2013-08-21 10:22:16','2013-08-21 10:22:16'),(2,'admin','admin@admin.com','d033e22ae348aeb5660fc2140aec35850c4da997',0,0,'2013-08-21 10:22:16','2013-08-21 10:22:16'),(3,'jed','test@gmail.com','123456789',1,0,'2013-08-21 10:22:16','2013-08-21 10:22:16'),(4,'tester','tester@test.com','0987654321',0,0,'2013-08-21 10:22:16','2013-08-21 10:22:16');
 UNLOCK TABLES;
 
 --
