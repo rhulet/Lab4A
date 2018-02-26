@@ -54,6 +54,7 @@ simply marked as logged into the website. */
 exports.userLogin = function (req){
 	return Users.findAll({where : {email: req.user._json.email}}).then(function (result){
 		if(result.length){
+			req.user.isAdmin = result[0].dataValues.isAdmin;
 			return Users.update({loggedIn : 1}, ({where: ["email=?", req.user._json.email]}))
 		}else{
 			return Users.create({
