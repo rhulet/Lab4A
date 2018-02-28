@@ -10,7 +10,8 @@ var Users = sequelize.define('users', {
 	userName: Sequelize.STRING,
 	email: Sequelize.STRING,
 	password: Sequelize.STRING,
-	loggedIn: Sequelize.INTEGER
+	loggedIn: Sequelize.INTEGER,
+	isAdmin: Sequelize.BOOLEAN
 })
 
 module.exports = Users; //this exports the model from this page to whatever page imports it
