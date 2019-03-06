@@ -44,7 +44,31 @@ exports.getMemeData = function (req){
  This function will be almost the same as the getMemeData function above, except for filtering
  the images returned by the specific user passed through the URL */
  exports.getViewData = function (req){
+	return Q.all([
+		Images.findAll({where : {userId: req.params.UserId}}),
+		Users.findAll({where : {userId: req.params.UserId}})
+	]).then(function (results){
+		if(!req.user) req.user = 1;
 
+		var images = results[0];
+		var users = results[1];
+
+		//we only need the user name from the Users results
+		for(var i = 0, len = images.length; i < len; i++){
+			for(var j = 0, len2 = users.length; j < len2; j++){
+				if (images[i].userId === users[j].userId){
+					images[i].userName = users[j].userName;
+					break;
+				}
+			}
+		}
+		return {
+			imageList : images, //the array of images, accessible via imageList in memes.ejs
+			user: req.user //the user object or a 1, accessible via user in memes.ejs
+		}
+	}).catch(function (err){
+		console.error('getViewData() error', err)
+	})
  }
 
 /* When a user logs in using Google, userLogin checks if the user exists in the database.

@@ -5,7 +5,7 @@ file is contained via a terminal and type "node server.js"
 ****************************************************************/
 
 //import the environment with our sensitive data
-require('dotenv').config()
+require('dotenv').config();
 
 /* Import needed dependencies */
 const express = require('express');
@@ -53,43 +53,43 @@ app.use(passport.session());
 app.use(express.static(__dirname + '/assets'));
 
 /* This starts your http server on the given port */
-server.listen(PORT, function (){
+server.listen(PORT, function () {
 	console.log('Server started on port ' + PORT)
 })
 
 //configure passport authentication
-passport.serializeUser(function (user, done){
+passport.serializeUser(function (user, done) {
 	done(null, user);
 });
-passport.deserializeUser(function (obj, done){
+passport.deserializeUser(function (obj, done) {
 	done(null, obj);
 });
 
 //this sets up the authentication used in part 2
 //fill in the prompted areas after you set up your google project in the .env file
 passport.use(new StrategyGoogle({
-		clientID: process.env.GOOGLE_CLIENT_ID || 'YOUR_CLIENT_ID',
-		clientSecret: process.env.GOOGLE_CLIENT_SECRET || 'YOUR_CLIENT_SECRET',
-		callbackURL: 'http://nodejs.'+ (process.env.NET_ID || 'YOUR_NET_ID') +'.it210.it.et.byu.edu/auth/google/return'
-	},
-	function (iss, sub, profile, accessToken, refreshToken, done){
+	clientID: process.env.GOOGLE_CLIENT_ID || 'YOUR_CLIENT_ID',
+	clientSecret: process.env.GOOGLE_CLIENT_SECRET || 'YOUR_CLIENT_SECRET',
+	callbackURL: 'http://nodejs.' + (process.env.NET_ID || 'YOUR_NET_ID') + '.it210.it.et.byu.edu/auth/google/return'
+},
+	function (iss, sub, profile, accessToken, refreshToken, done) {
 		done(null, profile);
 	}
 ));
 
 /* These are the routes. They take a path and route it to either the render/redirect
 function while linking them with the data necessary for their functionality */
-app.get('/memes', function (req, res){
-	memes.getMemeData(req).then(function (memeData){
+app.get('/memes', function (req, res) {
+	memes.getMemeData(req).then(function (memeData) {
 		res.render('memes', memeData);
 	})
 });
-app.get('/memes/user', function (req, res){
-	memes.userLogin(req).then(function (){
+app.get('/memes/user', function (req, res) {
+	memes.userLogin(req).then(function () {
 		res.redirect('/memes');
 	})
 });
-app.get('/memes/logout', function (req, res){
+app.get('/memes/logout', function (req, res) {
 	memes.logout(req);
 	res.redirect('/memes');
 });
@@ -102,51 +102,57 @@ can then access by using req.params.id. This will look at lot like the app.get('
 except you will want to use the getViewData function in memes.js that you wrote/will write
 */
 
+app.get('/memes/:UserId/view', function (req, res) {
+	memes.getViewData(req)
+		.then((memeData) => {
+			res.render('view', memeData);
+		});
+})
 
 
-
-app.get('/', function (req, res){
+app.get('/', function (req, res) {
 	res.render('index');
 })
 
-app.get('/login', function (req, res){
+app.get('/login', function (req, res) {
 	res.render('login');
 })
 
 app.get('/auth/google', passport.authenticate('google-openidconnect', {
-		 scope: ['https://www.googleapis.com/auth/userinfo.profile', 'https://www.googleapis.com/auth/userinfo.email']},
-		 { failureRedirect: '/login' }), function (req, res){
-	res.redirect('/memes/user');
-})
+	scope: ['https://www.googleapis.com/auth/userinfo.profile', 'https://www.googleapis.com/auth/userinfo.email']
+},
+	{ failureRedirect: '/login' }), function (req, res) {
+		res.redirect('/memes/user');
+	})
 
-app.get('/auth/google/return',  passport.authenticate('google-openidconnect', { failureRedirect: '/login' }),  function (req, res){
+app.get('/auth/google/return', passport.authenticate('google-openidconnect', { failureRedirect: '/login' }), function (req, res) {
 	//generate key to use for creating memes
-	generateKey(req, uuidv4()).then(function (key){
+	generateKey(req, uuidv4()).then(function (key) {
 		req.user.cskey = key;
 		res.redirect('/memes/user');
 	});
 })
 
 //generates a key to use for cross server validation
-function generateKey (req, key){
-	return CSKeys.findAll({where : {uuid: key}}).then(function (result){
+function generateKey(req, key) {
+	return CSKeys.findAll({ where: { uuid: key } }).then(function (result) {
 		//if key already exists, create a new key
-		if(result.length){
+		if (result.length) {
 			return generateKey(req, uuidv4())
-		} else{
+		} else {
 			return CSKeys.create({
 				uuid: key,
 				email: req.user._json.email
-			}).then(function (){
+			}).then(function () {
 				return key
 			})
 		}
-	}).catch(function (err){
+	}).catch(function (err) {
 		console.error('generateKey error', err);
 	})
 }
 
-app.get('/logout', function (req, res){
+app.get('/logout', function (req, res) {
 	res.redirect('/memes/logout');
 })
 
@@ -155,45 +161,45 @@ app.get('/logout', function (req, res){
  Whenever new information should be pushed to the clients, it is sent to all of the connected clients.
  THIS WILL BE USED IN PART 2 OF THE LAB, BUT YOU DON'T NEED TO MODIFY THIS FUNCTION.
 */
-io.sockets.on('connection', function (socket){
+io.sockets.on('connection', function (socket) {
 	connectionsArray.push(socket);
 	console.log('A new socket has connected, total connected: ', connectionsArray.length);
 
 	//sets up a handler for the disconnect event
-	socket.on('disconnect', function (){
+	socket.on('disconnect', function () {
 		var socketIndex = connectionsArray.indexOf(socket);
-		if (socketIndex >= 0){
+		if (socketIndex >= 0) {
 			connectionsArray.splice(socketIndex, 1);
 			console.log('socket ' + socketIndex + ' disconnected');
 		}
 	})
 
 	//sets up a handler for the button_click event
-	socket.on('button_click', function (imageId, buttonId){
-		Images.find({ where: {imageId: imageId}}).then(function (image){
-			image.updateAttributes({numLikes: ++image.numLikes}) //update the image record in the database
+	socket.on('button_click', function (imageId, buttonId) {
+		Images.find({ where: { imageId: imageId } }).then(function (image) {
+			image.updateAttributes({ numLikes: ++image.numLikes }) //update the image record in the database
 			io.emit('return_click', image, buttonId); //trigger the return_click event and send the updated information to all clients
 		})
 	})
 })
 
-app.get('/meme-hook', function (req, res){
+app.get('/meme-hook', function (req, res) {
 	res.sendStatus(200)
 
 	//if there are any current connections
-	if(connectionsArray.length){
+	if (connectionsArray.length) {
 		//runs the following functions asynchronously
 		Q.all([
-			Images.all({raw: true}), //gets all images
-			Users.all({raw: true}) //gets all users
-		]).then(function (results){
+			Images.all({ raw: true }), //gets all images
+			Users.all({ raw: true }) //gets all users
+		]).then(function (results) {
 			var images = results[0];
 			var users = results[1];
 
 			//we only need the user name from the Users results
-			for(var i = 0, len = images.length; i < len; i++){
-				for(var j = 0, len2 = users.length; j < len2; j++){
-					if (images[i].userId === users[j].userId){
+			for (var i = 0, len = images.length; i < len; i++) {
+				for (var j = 0, len2 = users.length; j < len2; j++) {
+					if (images[i].userId === users[j].userId) {
 						images[i].userName = users[j].userName;
 						break;
 					}
@@ -202,15 +208,15 @@ app.get('/meme-hook', function (req, res){
 
 			//send images to all clients
 			io.emit('notification', { images: images })
-		}).catch(function (err){
+		}).catch(function (err) {
 			console.error('meme-hook error', err);
 		})
 	}
 })
 // Tell the Browser to stop asking for the favicon :)
-app.get('/favicon.ico', function(req, res) {
-    res.status(204);
+app.get('/favicon.ico', function (req, res) {
+	res.status(204);
 });
-app.all('*', function (req, res){
+app.all('*', function (req, res) {
 	console.log('URL HIT WITH NO ROUTE', req.originalUrl)
 })
