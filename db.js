@@ -9,8 +9,8 @@ will be similar to the database connection file you made for PHP in Lab 3.
 
 let Sequelize = require('sequelize');
 
-let sequelize = new Sequelize('it210b', 'ladmin', 'chang3m3', {
-    host: 'localhost',
+let sequelize = new Sequelize('it210b', 'webadmin', 'zxcfrewQ1!', {
+    host: 'http://nodejs.rhulet34.it210.it.et.byu.edu/',
     dialect: 'mysql'
 })
 
