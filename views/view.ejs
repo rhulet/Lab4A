@@ -105,7 +105,7 @@
 				var images = data.images;
 
 				images.forEach(image => {
-					if (document.querySelector(`#block${image.imageId}`) === null) {
+					if (document.querySelector(`#block${image.imageId}`) === null && image.userId === <%=user.userId%>) {
 						$("#columns").append(`
 						<div class="pin back-image" id="block${image.imageId}">
 									<img src="${image.imagePath}" alt="${image.altText}">
