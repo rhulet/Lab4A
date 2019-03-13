@@ -10,7 +10,7 @@ will be similar to the database connection file you made for PHP in Lab 3.
 let Sequelize = require('sequelize');
 
 let sequelize = new Sequelize('it210b', 'root', 'zxcfrewQ1!', {
-    host: '192.168.90.65',
+    host: 'localhost',
     dialect: 'mysql'
 })
 
