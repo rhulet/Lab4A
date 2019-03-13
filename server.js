@@ -70,7 +70,7 @@ passport.deserializeUser(function (obj, done) {
 passport.use(new StrategyGoogle({
 	clientID: process.env.GOOGLE_CLIENT_ID || '912887461290-ep7ml4ea3n11j0v21vao1djb70j6e6nl.apps.googleusercontent.com',
 	clientSecret: process.env.GOOGLE_CLIENT_SECRET || 'VLisnm20wzpmw0Xs0apcUn8j',
-	callbackURL: 'http://localnodejs.' + (process.env.NET_ID || 'rhulet34') + '.it210.it.et.byu.edu:1337/auth/google/return'
+	callbackURL: 'http://nodejs.' + (process.env.NET_ID || 'rhulet34') + '.it210.it.et.byu.edu:1337/auth/google/return'
 },//CHANGE FOR PROD
 	function (iss, sub, profile, accessToken, refreshToken, done) {
 		done(null, profile);
