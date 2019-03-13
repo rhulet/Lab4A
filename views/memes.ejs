@@ -18,6 +18,7 @@
 
 <!DOCTYPE html>
 <html>
+
 <head>
 	<meta charset='utf-8'>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -31,6 +32,7 @@
 
 	<title>MEMES!</title>
 </head>
+
 <body class="bd">
 	<div class='navbar navbar-inverse'>
 		<div class='navbar-inner'>
@@ -43,10 +45,20 @@
 				<div class='nav-collapse collapse'>
 					<ul class='nav'>
 						<li id='home-nav-item'><a href='/memes'>Memes</a></li>
-						<li id='home-nav-item'><a href='/login'>Login</a></li>
+						<% if (user === 1) {%>
+							<li id='home-nav-item'><a href='/login'>Login</a></li>
+							<%} else {%>
+								<li id='home-nav-item'><a href='/logout'>Logout</a></li>
+							<%}%>
+						
 					</ul>
 					<ul class='nav pull-right'>
 						<li><a href='#'>Welcome
+								<% if (user === 1) {%>
+								Guest!
+								<%} else {%>
+								<%=user.displayName%>
+								<%}%>
 							 <!--
 								You will want to add code here (PART 2) to allow you to display a custom message if a user is
 								logged in (Welcome Bob!) or a generic message if no one is logged into the site (Welcome Guest User).
@@ -67,56 +79,86 @@
 				<!--
 				 The following lines break out of html into ejs to process data passed to the view
 				 from the controller. The "<% %>" indicates that you are breaking out of and then back into html.
-				 Notice that the open bracket for the for loop starts here, but ends after the html, meaning that
-				 the html between will be printed each time through the loop
-				-->
-				<% for(var i = 0, len = imageList.length; i < len; i++){
+								Notice that the open bracket for the for loop starts here, but ends after the html,
+								meaning that
+								the html between will be printed each time through the loop
+								-->
+								<% for(var i = 0, len = imageList.length; i < len; i++){
 					var current_image = imageList[i];%>
-					<!-- Here are examples of printing out a variable's value with "< %= % >" -->
-					<div class="pin back-image" id="block<%=current_image.imageId%>">
-						<img src="<%=current_image.imagePath%>"   alt="<%=current_image.altText%>">
+								<!-- Here are examples of printing out a variable's value with "< %= % >" -->
+								<div class="pin back-image" id="block<%=current_image.imageId%>">
+									<img src="<%=current_image.imagePath%>" alt="<%=current_image.altText%>">
 
-						<!-- this button is for "liking" the image. On click it passes the image id and the button's id to the updateLikeCount function -->
-						<button class="btn btn-primary btn-mini float-left" id="like<%=current_image.imageId %>" type="button" onClick="updateLikeCount(<%=current_image.imageId%>, this.id);">Likes: <%=current_image.numLikes%></button><br>
+									<!-- this button is for "liking" the image. On click it passes the image id and the button's id to the updateLikeCount function -->
+									<button class="btn btn-primary btn-mini float-left"
+										id="like<%=current_image.imageId %>" type="button"
+										onClick="updateLikeCount('<%=current_image.imageId%>', this.id);">Likes:
+										<%=current_image.numLikes%></button><br>
 
-						<!-- this button is a link to a user specific page -->
-						<a class="btn btn-info btn-mini" style="margin-top:5px;" href="/memes/<%=current_image.userId%>/view">More by <%=current_image.userName%></a>
-					</div>
-				<% } %>
+									<!-- this button is a link to a user specific page -->
+									<a class="btn btn-info btn-mini" style="margin-top:5px;"
+										href="/memes/<%=current_image.userId%>/view">More by
+										<%=current_image.userName%></a>
+								</div>
+								<% } %>
+				</div>
 			</div>
 		</div>
-	</div>
 
-	<script>
-		//connect to the websocket server
-		var socket = io.connect('http://1.1.1.1:1337'); //change this IP address your server
+		<script>
+			//connect to the websocket server
+			var socket = io.connect('localhost:1337'); //change this IP address your server
 
-		//on the notification event add the new meme(s) to the '#columns' div
-		//this notification is coming from the server.js meme-hook function
-		socket.on('notification', function (data){
-			var images = data.images;
+			//on the notification event add the new meme(s) to the '#columns' div
+			//this notification is coming from the server.js meme-hook function
+			socket.on('notification', function (data) {
+				var images = data.images;
 
-			/* DO WORK HERE IN PART 2!
-			This function receives all of the meme information sent from the web socket.
-			Figure out how to use that data to update the page when a new meme is added.
-			We recommend using the jQuery ".append()" function
-			*/
+				images.forEach(image => {
+					if (document.querySelector(`#block${image.imageId}`) === null) {
+						$("#columns").append(`
+						<div class="pin back-image" id="block${image.imageId}">
+									<img src="${image.imagePath}" alt="${image.altText}">
 
-			//if you want the '<time></time>' div to update with a time stamp, uncomment the following line
-			//$('time').html('Last Update:' + data.time);
-		})
+									<!-- this button is for "liking" the image. On click it passes the image id and the button's id to the updateLikeCount function -->
+									<button class="btn btn-primary btn-mini float-left"
+										id="like${image.imageId}" type="button"
+										onClick="updateLikeCount('${image.imageId}', ${this.id});">Likes:
+										${image.numLikes}</button><br>
 
-		//called when the like button is clicked
-		function updateLikeCount (imageId, buttonId){
-			//You will need to use socket.emit to send information to the server (server.js). Use the event name 'button_click'
+									<!-- this button is a link to a user specific page -->
+									<a class="btn btn-info btn-mini" style="margin-top:5px;"
+										href="/memes/${image.userId}/view">More by
+										${image.userName}</a>
+								</div>
+						`)
+					} else {
 
-		}
+					}
+				});
+				/* DO WORK HERE IN PART 2!
+				This function receives all of the meme information sent from the web socket.
+				Figure out how to use that data to update the page when a new meme is added.
+				We recommend using the jQuery ".append()" function
+				*/
 
-		//called on return of updateLikeCount (above) after it runs on the server file
-		socket.on('return_click', function (newImage, buttonId){
-			//You will need to add functionality here to update the text for the button containing the like count
+				//if you want the '<time></time>' div to update with a time stamp, uncomment the following line
+				//$('time').html('Last Update:' + data.time);
+			})
 
-		})
-	</script>
+			//called when the like button is clicked
+			function updateLikeCount(imageId, buttonId) {
+				//You will need to use socket.emit to send information to the server (server.js). Use the event name 'button_click'
+				socket.emit('button_click', imageId, buttonId);
+			}
+
+			//called on return of updateLikeCount (above) after it runs on the server file
+			socket.on('return_click', function (newImage, buttonId) {
+				document.querySelector(`#${buttonId}`).innerHTML = `Likes: ${newImage.numLikes}`; 
+				//You will need to add functionality here to update the text for the button containing the like count
+
+			})
+		</script>
 </body>
+
 </html>

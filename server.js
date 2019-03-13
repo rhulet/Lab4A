@@ -68,10 +68,10 @@ passport.deserializeUser(function (obj, done) {
 //this sets up the authentication used in part 2
 //fill in the prompted areas after you set up your google project in the .env file
 passport.use(new StrategyGoogle({
-	clientID: process.env.GOOGLE_CLIENT_ID || 'YOUR_CLIENT_ID',
-	clientSecret: process.env.GOOGLE_CLIENT_SECRET || 'YOUR_CLIENT_SECRET',
-	callbackURL: 'http://nodejs.' + (process.env.NET_ID || 'YOUR_NET_ID') + '.it210.it.et.byu.edu/auth/google/return'
-},
+	clientID: process.env.GOOGLE_CLIENT_ID || '912887461290-ep7ml4ea3n11j0v21vao1djb70j6e6nl.apps.googleusercontent.com',
+	clientSecret: process.env.GOOGLE_CLIENT_SECRET || 'VLisnm20wzpmw0Xs0apcUn8j',
+	callbackURL: 'http://localnodejs.' + (process.env.NET_ID || 'rhulet34') + '.it210.it.et.byu.edu:1337/auth/google/return'
+},//CHANGE FOR PROD
 	function (iss, sub, profile, accessToken, refreshToken, done) {
 		done(null, profile);
 	}
