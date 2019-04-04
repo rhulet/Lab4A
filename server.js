@@ -20,6 +20,7 @@ const Q = require('q');
 const uuidv4 = require('uuid/v4');
 const passport = require('passport');
 const StrategyGoogle = require('passport-google-openidconnect').Strategy;
+const PythonShell = require('python-shell').PythonShell;
 
 var db = require('./db'); //initializes the database connection and allows to access the models we created
 var memes = require('./controllers/memes'); //imports the functions from the meme controller
@@ -183,7 +184,13 @@ io.sockets.on('connection', function (socket) {
 	})
 })
 
-app.get('/meme-hook', function (req, res) {
+app.get('/meme-hook', function (req, res, next) {
+	PythonShell.run('./scripts/mem-hook.py', null, function (err) {
+		if (err) throw err;
+		console.log('finished');
+	  });
+	  next()
+}, function (req, res, next) {
 	res.sendStatus(200)
 
 	//if there are any current connections
@@ -208,6 +215,7 @@ app.get('/meme-hook', function (req, res) {
 
 			//send images to all clients
 			io.emit('notification', { images: images })
+			next()
 		}).catch(function (err) {
 			console.error('meme-hook error', err);
 		})

@@ -13,7 +13,7 @@ var CSKeys = require('../model/cskeys'); //allows us to access the cross server 
 in the server.js page. The '/memes' route then passes this data to the render function */
 exports.getMemeData = function (req){
 	return Q.all([
-		Images.all({raw: true}),
+		Images.findAll({where : {uploaded: 1}}),
 		Users.all({raw: true})
 	]).then(function (results){
 		if(!req.user) req.user = 1;
