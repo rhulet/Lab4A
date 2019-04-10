@@ -85,6 +85,20 @@ app.get('/memes', function (req, res) {
 		res.render('memes', memeData);
 	})
 });
+
+app.get('/admin', function (req, res) {
+	// if (req.user) {
+	// 	if (req.user.isAdmin) {
+			memes.getAdminData(req).then(function (memeData) {
+				res.render('admin', memeData);
+			})
+	// 	} else {
+	// 		res.redirect('/memes');
+	// 	}
+	// } else {
+	// 	res.redirect('/memes');
+	// }
+});
 app.get('/memes/user', function (req, res) {
 	memes.userLogin(req).then(function () {
 		res.redirect('/memes');
@@ -182,22 +196,101 @@ io.sockets.on('connection', function (socket) {
 			io.emit('return_click', image, buttonId); //trigger the return_click event and send the updated information to all clients
 		})
 	})
+
+	socket.on('delete_user', function (userId) {
+		let options = { 
+			args: [userId]
+		};
+		PythonShell.run('./scripts/deleteUser.py', options, function (err) {
+			if (err) throw err;
+			console.log('finished');
+			io.emit('return_admin');
+		})
+		// Images.find({ where: { imageId: imageId } }).then(function (image) {
+		// 	image.updateAttributes({ numLikes: ++image.numLikes }) //update the image record in the database
+		// 	io.emit('return_click', image, buttonId); //trigger the return_click event and send the updated information to all clients
+		// })
+	})
+
+	socket.on('delete_image', function (imageId) {
+		let options = { 
+			args: [imageId]
+		};
+		PythonShell.run('./scripts/deleteImage.py', options, function (err) {
+			if (err) throw err;
+			console.log('finished');
+			io.emit('return_admin');
+		})
+		// Images.find({ where: { imageId: imageId } }).then(function (image) {
+		// 	image.updateAttributes({ numLikes: ++image.numLikes }) //update the image record in the database
+		// 	io.emit('return_click', image, buttonId); //trigger the return_click event and send the updated information to all clients
+		// })
+	})
+
+	socket.on('approve_image', function (imageId) {
+		let options = { 
+			args: [imageId]
+		};
+		PythonShell.run('./scripts/approveImage.py', options, function (err) {
+			if (err) throw err;
+			console.log('finished');
+			io.emit('return_admin');
+			Q.all([
+				Images.findAll({
+					where: {
+						uploaded: 1,
+						imageApproved: 1
+					}
+				}), //gets all images
+				Users.all({ raw: true }) //gets all users
+			]).then(function (results) {
+				var images = results[0];
+				var users = results[1];
+	
+				//we only need the user name from the Users results
+				for (var i = 0, len = images.length; i < len; i++) {
+					for (var j = 0, len2 = users.length; j < len2; j++) {
+						if (images[i].userId === users[j].userId) {
+							images[i].userName = users[j].userName;
+							break;
+						}
+					}
+				}
+	
+				//send images to all clients
+				io.emit('notification', { images: images })
+				next()
+			}).catch(function (err) {
+				console.error('meme-hook error', err);
+			})
+			
+		})
+		// Images.find({ where: { imageId: imageId } }).then(function (image) {
+		// 	image.updateAttributes({ numLikes: ++image.numLikes }) //update the image record in the database
+		// 	io.emit('return_click', image, buttonId); //trigger the return_click event and send the updated information to all clients
+		// })
+	})
 })
 
 app.get('/meme-hook', function (req, res, next) {
 	PythonShell.run('./scripts/mem-hook.py', null, function (err) {
 		if (err) throw err;
 		console.log('finished');
-	  });
-	  next()
+	});
+	next()
 }, function (req, res, next) {
 	res.sendStatus(200)
 
 	//if there are any current connections
-	if (connectionsArray.length) {
+	if (connectionsArray.length >= 0) {
 		//runs the following functions asynchronously
 		Q.all([
-			Images.all({ raw: true }), //gets all images
+			Images.findAll({
+				where: {
+					uploaded: 1,
+					imageApproved: 1
+				}
+			}), //gets all images
 			Users.all({ raw: true }) //gets all users
 		]).then(function (results) {
 			var images = results[0];
