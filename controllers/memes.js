@@ -13,7 +13,9 @@ var CSKeys = require('../model/cskeys'); //allows us to access the cross server 
 in the server.js page. The '/memes' route then passes this data to the render function */
 exports.getMemeData = function (req){
 	return Q.all([
-		Images.findAll({where : {uploaded: 1}}),
+		Images.findAll({where : {
+			uploaded: 1,
+			imageApproved: 1}}),
 		Users.all({raw: true})
 	]).then(function (results){
 		if(!req.user) req.user = 1;
@@ -32,10 +34,41 @@ exports.getMemeData = function (req){
 		}
 		return {
 			imageList : images, //the array of images, accessible via imageList in memes.ejs
-			user: req.user //the user object or a 1, accessible via user in memes.ejs
+			user: req.user, //the user object or a 1, accessible via user in memes.ejs
+			userList: users
 		}
 	}).catch(function (err){
 		console.error('getMemeData() error', err)
+	})
+}
+
+exports.getAdminData = function (req) {
+	return Q.all([
+		Images.findAll({where : {
+			uploaded: 1}}),
+		Users.all({raw: true})
+	]).then(function (results){
+		if(!req.user) req.user = 1;
+
+		var images = results[0];
+		var users = results[1];
+
+		//we only need the user name from the Users results
+		for(var i = 0, len = images.length; i < len; i++){
+			for(var j = 0, len2 = users.length; j < len2; j++){
+				if (images[i].userId === users[j].userId){
+					images[i].userName = users[j].userName;
+					break;
+				}
+			}
+		}
+		return {
+			imageList : images, //the array of images, accessible via imageList in memes.ejs
+			user: req.user, //the user object or a 1, accessible via user in memes.ejs
+			userList: users
+		}
+	}).catch(function (err){
+		console.error('getAdminData() error', err)
 	})
 }
 
@@ -64,7 +97,8 @@ exports.getMemeData = function (req){
 		}
 		return {
 			imageList : images, //the array of images, accessible via imageList in memes.ejs
-			user: req.user //the user object or a 1, accessible via user in memes.ejs
+			user: req.user,  //the user object or a 1, accessible via user in memes.ejs
+			userList: users
 		}
 	}).catch(function (err){
 		console.error('getViewData() error', err)
