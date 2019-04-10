@@ -48,9 +48,13 @@
 						<% if (user === 1) {%>
 						<li id='home-nav-item'><a href='/login'>Login</a></li>
 						<%} else {%>
-						<li id='home-nav-item'><a href='http://192.168.101.60/createMeme.aspx?key=371637cb-6ff0-4e6e-b758-995ac6c5cb65'>Create Meme</a></li>
+						<li id='home-nav-item'><a href='http://10.8.1.23/createMeme.aspx?key=371637cb-6ff0-4e6e-b758-995ac6c5cb65'>Create Meme</a></li>
+						<% if (user.isAdmin) {%>
+							<li id='home-nav-item'><a href='/admin'>Admin</a></li>
+						<%}%>
 						<li id='home-nav-item'><a href='/logout'>Logout</a></li>
 						<%}%>
+
 						
 					</ul>
 					<ul class='nav pull-right'>

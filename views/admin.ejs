@@ -1,0 +1,201 @@
+<%/****************************************************************************************
+ This comment is inside EJS comment marks, so it will not render in HTML.
+ This page contains the HTML for the /memes path. This page is populated with images from
+ the database. The extension EJS stands for Embedded JavaScript and is HTML built using
+ server-side JavaScript (similar to when we used PHP combined with HTML).
+
+ The controller for this page is found in the memes.js page. The getMemeData function is
+ called from the server.js page when this page is rendered. So the variables generated
+ by the getMemeData function (imageList and user) are visible to EJS within this page.
+
+ EJS tips:
+ If you just want to reference a single variable you can use the EJS breakout: < % = and
+ close with % > (without the spaces), for functions or other non-variables don't use the
+ '=', only < % and close with % > (without the spaces). Again, this is similar to breaking
+ out of html with <?php CODE ?>, but using < % CODE % > or, for printing out a single
+ value, < %= VARIABLE % >.
+***************************************************************************************/%>
+
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script type='text/javascript' src="http://code.jquery.com/jquery-latest.min.js"></script>
+    <script type='text/javascript' src='/js/bootstrap.min.js'></script>
+    <script type='text/javascript' src="/socket.io/socket.io.js"></script>
+
+    <link rel='stylesheet' type='text/css' href='/css/bootstrap.min.css'>
+    <link rel='stylesheet' type='text/css' href='/css/bootstrap-responsive.min.css'>
+    <link rel='stylesheet' type='text/css' href='/css/style.css'>
+
+    <title>MEMES!</title>
+</head>
+
+<body class="bd">
+    <div class='navbar navbar-inverse'>
+        <div class='navbar-inner'>
+            <div class='container'>
+                <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <div class='nav-collapse collapse'>
+                    <ul class='nav'>
+                        <li id='home-nav-item'><a href='/memes'>Memes</a></li>
+                        <% if (user === 1) {%>
+                        <li id='home-nav-item'><a href='/login'>Login</a></li>
+                        <%} else {%>
+                        <li id='home-nav-item'><a
+                                href='http://192.168.1.237/createMeme.aspx?key=371637cb-6ff0-4e6e-b758-995ac6c5cb65'>Create
+                                Meme</a></li>
+                        <% if (user.isAdmin) {%>
+                        <li id='home-nav-item'><a href='/admin'>Admin</a></li>
+                        <%}%>
+						<li id='home-nav-item'><a href='/logout'>Logout</a></li>
+						<%}%>
+
+
+                    </ul>
+                    <ul class='nav pull-right'>
+                        <li><a href='#'>Welcome
+                                <% if (user === 1) {%>
+                                <script>
+                                    localStorage.setItem('loggedIn', 0);
+                                </script>
+                                Guest!
+                                <%} else {%>
+                                <script>
+                                    localStorage.setItem('loggedIn', 1);
+                                </script>
+                                <%=user.displayName%>
+                                <%}%>
+							 <!--
+								You will want to add code here (PART 2) to allow you to display a custom message if a user is
+								logged in (Welcome Bob!) or a generic message if no one is logged into the site (Welcome Guest User).
+								Similarly, if a user is not logged in you want a login button to display and no logout button,
+								but if a user is logged in then you want to display a logout button. You may need to break in
+								and out of Node JS several times using "< % % >" and "< %= % >"
+							 -->
+						</a></li>
+					</ul>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="row-fluid">
+		<time></time>
+		<div id="wrapper">
+			
+				<!--
+				 The following lines break out of html into ejs to process data passed to the view
+				 from the controller. The "<% %>" indicates that you are breaking out of and then back into html.
+                                Notice that the open bracket for the for loop starts here, but ends after the html,
+                                meaning that
+                                the html between will be printed each time through the loop
+                                -->
+                                <!-- Here are examples of printing out a variable's value with "< %= % >" -->
+
+                                <form class="admin">
+                                    <div id="columns" class="top">
+                                        <div class="dropdown pin back-image">
+                                            <label for="delete-user">Select a user to delete:</label>
+                                            <select name="deleteUser" id="delete-user">
+                                                <option value="" selected>--Select a user--</option>
+                                                <% userList.forEach(user => {%>
+                                                <option value="<%=user.userId%>"><%=user.userName%></option>
+                                                <%})%>
+                                            </select>
+                                            <div class="buttons">
+                                                <button class="btn btn-primary float-right reject user" type="button"
+                                                    onClick="">Delete User
+                                                    &#10006</button><br>
+                                            </div>
+                                        </div>
+                                        <div class="dropdown pin back-image">
+                                            <label for="delete-image">Select an approved image to delete:</label>
+                                            <select name="deleteImage" id="delete-image">
+                                                <option value="" selected>--Select an image--</option>
+                                                <% imageList.forEach(image => {
+                                                if (image.imageApproved === "1") {%>
+                                                <option value="<%=image.imageId%>">
+                                                    <%=image.imagePath.replace(/.*\//g,'')%>
+                                                </option>
+                                                <%}})%>
+                                            </select>
+                                            <div class="buttons">
+                                                <button class="btn btn-primary float-right reject image" type="button"
+                                                    onClick="">Delete Image
+                                                    &#10006</button><br>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div id="columns">
+                                        <% for(var i = 0, len = imageList.length; i < len; i++){
+                                        var current_image = imageList[i];
+                                        if (current_image.imageApproved === "0") {%>
+                                        <!-- Here are examples of printing out a variable's value with "< %= % >" -->
+                                        <div class="pin back-image" id="block<%=current_image.imageId%>">
+                                            <img src="<%=current_image.imagePath%>" alt="<%=current_image.imageId%>">
+                                            <div class="buttons">
+                                                <!-- this button is for "liking" the image. On click it passes the image id and the button's id to the updateLikeCount function -->
+                                                <button class="btn btn-primary float-left approve" type="button"
+                                                    onClick="">Approve
+                                                    &#10004</button><br>
+
+                                                <button class="btn btn-primary float-right reject unApp" type="button"
+                                                    onClick="">Reject
+                                                    &#10006</button><br>
+                                            </div>
+                                        </div>
+                                        <% }} %>
+                                </form>
+                </div>
+            </div>
+        </div>
+        <script>
+            let socket = io.connect('localhost:1337');
+            document.querySelector('.btn.reject.user').addEventListener('click', event => {
+                event.preventDefault();
+                if (document.querySelector('.admin').querySelector('select[name=deleteUser]').value !== "") {
+                    if (window.confirm("Do you really want to delete this user?")) {
+                        socket.emit('delete_user', document.querySelector('.admin').querySelector('select[name=deleteUser]').value);
+                    }
+                }
+            })
+            document.querySelector('.btn.reject.image').addEventListener('click', event => {
+                event.preventDefault();
+
+                if (document.querySelector('.admin').querySelector('select[name=deleteImage]').value !== "") {
+                    if (window.confirm("Do you really want to delete this image?")) {
+                        socket.emit('delete_image', document.querySelector('.admin').querySelector('select[name=deleteImage]').value);
+                    }
+                }
+            })
+            document.querySelectorAll('.reject.unApp').forEach(button => {
+                button.addEventListener('click', event => {
+                    event.preventDefault();
+                    if (window.confirm("Do you really want to delete this image?")) {
+                        socket.emit('delete_image', event.currentTarget.parentElement.parentElement.querySelector('img').alt)
+                    }
+                })
+            })
+            document.querySelectorAll('.approve').forEach(button => {
+                button.addEventListener('click', event => {
+                    event.preventDefault();
+                    if (window.confirm("Do you really want to approve this image?")) {
+                        socket.emit('approve_image', event.currentTarget.parentElement.parentElement.querySelector('img').alt)
+                    }
+                })
+            })
+
+            socket.on('return_admin', function () {
+                window.location.reload(true);
+                //You will need to add functionality here to update the text for the button containing the like count
+            })
+        </script>
+</body>
+
+</html>

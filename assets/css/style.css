@@ -21,6 +21,28 @@
 	background-color: white;
 }
 
+.approve {
+	background-image: linear-gradient(to top,green,lightgreen);
+	background-color: transparent;
+}
+
+.approve:hover {
+	background: green;
+}
+
+.reject {
+	background-image: linear-gradient(to top,darkred,red);
+	background-color: transparent;
+}
+
+.reject:hover {
+	background: darkred;
+}
+
+.top {
+	padding-bottom: 2rem;
+}
+
 .pin img {
 	width: 100%;
 	border-bottom: 1px solid #ccc;
